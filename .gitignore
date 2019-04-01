@@ -1,7 +1,3 @@
-proxy.json
-proxies.json
-whitelist.json
-
 # Logs
 logs
 *.log
