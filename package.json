@@ -1,5 +1,5 @@
 {
-  "name": "glorious-rotator",
+  "name": "glorious-proxy-rotator",
   "version": "0.2.0",
   "description": "Simple proxy rotator",
   "scripts": {

@@ -2,14 +2,17 @@
 
 const http = require("http");
 const url = require("url");
+
+// Importing these to contain this proxy system only for local usage
 const isLocalHost = require("is-localhost");
+const getClientIp = require("./libs/get-client-ip");
 
 async function runServer({
   proxies = [],
   config = { proxyPort: 3456, retryDelay: 1000, maxRetries: 3 }
 }) {
   const { proxyPort, retryDelay, maxRetries } = config;
-  
+
   /**
    * @return {object}
    */
@@ -176,7 +179,8 @@ async function runServer({
    */
   async function masterHandler(method, args) {
     const [request, response] = args;
-    const getClientIp = require("./libs/get-client-ip");
+  
+    // Block outsiders
     const IP = getClientIp(request);
     const localUser = isLocalHost(IP);
 
@@ -184,6 +188,8 @@ async function runServer({
       response.write("Access Denied");
       return response.end();
     }
+
+    // Continue normally
     switch (method) {
       case "request":
         requestHandler(...args);
@@ -205,7 +211,10 @@ async function runServer({
   server.on("connect", (...args) => masterHandler("connect", args));
 
   console.log("Start proxy server on port %s", proxyPort);
-  return server.listen(proxyPort);
+  
+  // Promisify server.listen
+  // See: https://github.com/nodejs/node/issues/21482#issue-335076411
+  return new Promise((res, rej) => server.listen(proxyPort, err => err ? rej(err) : res()));
 }
 
 module.exports = runServer;
